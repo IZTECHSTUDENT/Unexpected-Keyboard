@@ -35,6 +35,8 @@ public final class KeyboardData
   public final boolean embedded_number_row;
   /** Whether extra keys from [method.xml] should be added to this layout. */
   public final boolean locale_extra_keys;
+  /** Whether the automatic wide-screen split should be skipped. */
+  public final boolean skip_auto_split;
   /** Position of every keys on the layout, see [getKeys()]. */
   private Map<KeyValue, KeyPos> _key_pos = null;
 
@@ -238,6 +240,7 @@ public final class KeyboardData
     boolean bottom_row = attribute_bool(parser, "bottom_row", true);
     boolean embedded_number_row = attribute_bool(parser, "embedded_number_row", false);
     boolean locale_extra_keys = attribute_bool(parser, "locale_extra_keys", true);
+    boolean skip_auto_split = attribute_bool(parser, "skip_auto_split", false);
     float specified_kw = attribute_float(parser, "width", 0f);
     String script = parser.getAttributeValue(null, "script");
     if (script != null && script.equals(""))
@@ -267,7 +270,8 @@ public final class KeyboardData
       }
     }
     float kw = (specified_kw != 0f) ? specified_kw : compute_max_width(rows);
-    return new KeyboardData(rows, kw, modmap, script, numpad_script, name, bottom_row, embedded_number_row, locale_extra_keys);
+    return new KeyboardData(rows, kw, modmap, script, numpad_script, name,
+        bottom_row, embedded_number_row, locale_extra_keys, skip_auto_split);
   }
 
   private static float compute_max_width(List<Row> rows)
@@ -286,7 +290,8 @@ public final class KeyboardData
   }
 
   protected KeyboardData(List<Row> rows_, float kw, Modmap mm, String sc,
-      String npsc, String name_, boolean bottom_row_, boolean embedded_number_row_, boolean locale_extra_keys_)
+      String npsc, String name_, boolean bottom_row_, boolean embedded_number_row_,
+      boolean locale_extra_keys_, boolean skip_auto_split_)
   {
     float kh = 0.f;
     for (Row r : rows_)
@@ -301,6 +306,7 @@ public final class KeyboardData
     bottom_row = bottom_row_;
     embedded_number_row = embedded_number_row_;
     locale_extra_keys = locale_extra_keys_;
+    skip_auto_split = skip_auto_split_;
   }
 
   /** Copies the fields of a keyboard, with rows changed. */
@@ -308,7 +314,7 @@ public final class KeyboardData
   {
     return new KeyboardData(rows_, compute_max_width(rows_), modmap, script,
         numpad_script, name, bottom_row, embedded_number_row,
-        locale_extra_keys);
+        locale_extra_keys, skip_auto_split);
   }
 
   public static class Row

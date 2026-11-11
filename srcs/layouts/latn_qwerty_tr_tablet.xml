@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<keyboard name="QWERTY (Türkçe Tablet)" script="latin"
+    bottom_row="false" embedded_number_row="true" locale_extra_keys="false"
+    skip_auto_split="true">
+  <modmap>
+    <shift a="i" b="İ" />
+    <shift a="ı" b="I" />
+  </modmap>
+  <row scale="17">
+    <key key0="1" key4="loc esc"/>
+    <key key0="2"/>
+    <key key0="3"/>
+    <key key0="4"/>
+    <key key0="5"/>
+    <key shift="5" key0="6"/>
+    <key key0="7"/>
+    <key key0="8"/>
+    <key key0="9"/>
+    <key key0="0"/>
+  </row>
+  <row scale="17">
+    <key key0="q"/>
+    <key key0="w"/>
+    <key key0="e"/>
+    <key key0="r"/>
+    <key key0="t"/>
+    <key key0="y"/>
+    <key shift="5" key0="u"/>
+    <key key0="ı"/>
+    <key key0="o"/>
+    <key key0="p"/>
+    <key key0="ğ"/>
+    <key key0="ü"/>
+  </row>
+  <row scale="17">
+    <key key0="a" key1="loc tab"/>
+    <key key0="s"/>
+    <key key0="d"/>
+    <key key0="f"/>
+    <key key0="g"/>
+    <key key0="h"/>
+    <key shift="5" key0="j"/>
+    <key key0="k"/>
+    <key key0="l"/>
+    <key key0="ş"/>
+    <key key0="i"/>
+  </row>
+  <row scale="17">
+    <key width="1.5" role="action" key0="shift" key2="loc capslock"/>
+    <key key0="z"/>
+    <key key0="x"/>
+    <key key0="c"/>
+    <key key0="v"/>
+    <key key0="b"/>
+    <key shift="5" key0="n"/>
+    <key key0="m"/>
+    <key key0="ö"/>
+    <key key0="ç"/>
+    <key width="1.5" role="action" key0="backspace" key2="delete"/>
+  </row>
+  <row height="0.95" scale="17">
+    <key width="1.7" role="action" key0="ctrl" key1="loc switch_greekmath"
+        key2="loc meta" key3="loc switch_clipboard" key4="switch_numeric"/>
+    <key width="1.1" role="action" key0="fn" key1="loc alt"
+        key2="loc change_method" key3="switch_emoji" key4="config"/>
+    <key width="4.4" role="space_bar" key0="space" key7="switch_forward"
+        key8="switch_backward" key5="cursor_left" key6="cursor_right"/>
+    <key width="4.4" shift="1" role="space_bar" key0="space"/>
+    <key width="1.1" role="action" key0="loc compose" key7="up"
+        key6="right" key5="left" key8="down" key1="loc home"
+        key2="loc page_up" key3="loc end" key4="loc page_down"/>
+    <key width="1.7" role="action" key0="enter" key1="loc voice_typing"
+        key2="action"/>
+  </row>
+</keyboard>

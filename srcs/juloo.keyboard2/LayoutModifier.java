@@ -47,7 +47,7 @@ public final class LayoutModifier
     else if (globalConfig.add_number_row && !kw.embedded_number_row) // The numpad removes the number row
     {
       added_number_row = modify_number_row(globalConfig.number_row_symbols ? number_row_symbols : number_row_no_symbols, kw);
-      if (globalConfig.split_layout)
+      if (should_split_layout(globalConfig.split_layout, kw))
         added_number_row = LayoutLandscapeModifier.transform_number_row(added_number_row);
       remove_keys.addAll(added_number_row.getKeys(0).keySet());
     }
@@ -55,7 +55,7 @@ public final class LayoutModifier
     if (kw.bottom_row)
       kw = kw.insert_row(bottom_row, kw.rows.size());
     // Split the layout in landscape orientation
-    if (globalConfig.split_layout)
+    if (should_split_layout(globalConfig.split_layout, kw))
       kw = LayoutLandscapeModifier.transform_to_landscape(kw);
     // Compose keys to add to the layout
     // 'extra_keys_keyset' reflects changes made to 'extra_keys'
@@ -89,6 +89,11 @@ public final class LayoutModifier
     if (added_number_row != null)
       kw = kw.insert_row(added_number_row, 0);
     return kw;
+  }
+
+  static boolean should_split_layout(boolean split_layout, KeyboardData kw)
+  {
+    return split_layout && !kw.skip_auto_split;
   }
 
   /** Handle the numpad layout. The [main_kw] is used to adapt the numpad to
