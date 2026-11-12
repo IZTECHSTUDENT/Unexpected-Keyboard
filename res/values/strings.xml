@@ -173,4 +173,4 @@
     <string name="pref_split_layout_never">Never</string>
     <string name="pref_split_layout_landscape">In landscape orientation</string>
     <string name="pref_split_layout_wide">On wide screens</string>
-</resources>
+    <string name="pref_theme_e_animetriptych">Anime Triptych</string>  </resources>

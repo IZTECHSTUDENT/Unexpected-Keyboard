@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.graphics.Canvas;
 import android.graphics.Insets;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -21,12 +22,12 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Keyboard2View extends View
-  implements View.OnTouchListener, Pointers.IPointerEventHandler
+        implements View.OnTouchListener, Pointers.IPointerEventHandler
 {
   private KeyboardData _keyboard;
 
   /** The key holding the shift key is used to set shift state from
-      autocapitalisation. */
+   autocapitalisation. */
   private KeyboardData.Key _shift_key;
 
   /** Used to add fake pointers. */
@@ -54,6 +55,7 @@ public class Keyboard2View extends View
   private Theme.Computed _tc;
 
   private static RectF _tmpRect = new RectF();
+  private final Matrix _background_matrix = new Matrix();
 
   enum Vertical
   {
@@ -71,7 +73,7 @@ public class Keyboard2View extends View
     refresh_navigation_bar(context);
     setOnTouchListener(this);
     int layout_id = (attrs == null) ? 0 :
-      attrs.getAttributeResourceValue(null, "layout", 0);
+            attrs.getAttributeResourceValue(null, "layout", 0);
     if (layout_id == 0)
       reset();
     else
@@ -122,7 +124,7 @@ public class Keyboard2View extends View
   }
 
   void set_fake_ptr_latched(KeyboardData.Key key, KeyValue kv, boolean latched,
-      boolean lock)
+                            boolean lock)
   {
     if (_keyboard == null || key == null)
       return;
@@ -141,12 +143,12 @@ public class Keyboard2View extends View
     set_fake_ptr_latched(_compose_key, KeyValue.COMPOSE, pending, false);
   }
 
-  /** Called from [Keybard2.onUpdateSelection].  */
+  /** Called from [Keybard2.onUpdateSelection]. */
   public void set_selection_state(boolean selection_state)
   {
     if (_config.editor_config.selection_mode_enabled)
       set_fake_ptr_latched(KeyboardData.Key.EMPTY,
-          KeyValue.SELECTION_MODE, selection_state, true);
+              KeyValue.SELECTION_MODE, selection_state, true);
   }
 
   public KeyValue modifyKey(KeyValue k, Pointers.Modifiers mods)
@@ -164,15 +166,14 @@ public class Keyboard2View extends View
 
   public void onPointerUp(KeyValue k, Pointers.Modifiers mods)
   {
-    // [key_up] must be called before [updateFlags]. The latter might disable
-    // flags.
+    // [key_up] must be called before [updateFlags].
     _config.handler.key_up(k, mods);
     updateFlags();
     invalidate();
   }
 
   public void onPointerHold(KeyValue k, Pointers.Modifiers mods,
-      VibratorCompat.Mode vibration_mode)
+                            VibratorCompat.Mode vibration_mode)
   {
     _config.handler.key_up(k, mods);
     updateFlags();
@@ -203,6 +204,7 @@ public class Keyboard2View extends View
       case MotionEvent.ACTION_POINTER_UP:
         _pointers.onTouchUp(event.getPointerId(event.getActionIndex()));
         break;
+
       case MotionEvent.ACTION_DOWN:
       case MotionEvent.ACTION_POINTER_DOWN:
         p = event.getActionIndex();
@@ -212,17 +214,21 @@ public class Keyboard2View extends View
         if (key != null)
           _pointers.onTouchDown(tx, ty, event.getPointerId(p), key);
         break;
+
       case MotionEvent.ACTION_MOVE:
         for (p = 0; p < event.getPointerCount(); p++)
-          _pointers.onTouchMove(event.getX(p), event.getY(p), event.getPointerId(p));
+          _pointers.onTouchMove(
+                  event.getX(p), event.getY(p), event.getPointerId(p));
         break;
+
       case MotionEvent.ACTION_CANCEL:
         _pointers.onTouchCancel();
         break;
+
       default:
-        return (false);
+        return false;
     }
-    return (true);
+    return true;
   }
 
   private KeyboardData.Row getRowAtPosition(float ty)
@@ -272,40 +278,43 @@ public class Keyboard2View extends View
     _marginRight = Math.max(_config.horizontal_margin, _insets_right);
     _marginBottom = _config.margin_bottom + _insets_bottom;
     _keyWidth = (width - _marginLeft - _marginRight) / _keyboard.keysWidth;
+
     _tc = new Theme.Computed(_theme, _config, _keyWidth, _keyboard);
-    // Compute the size of labels based on the width or the height of keys. The
-    // margin around keys is taken into account. Keys normal aspect ratio is
-    // assumed to be 3/2 for a 10 columns layout. It's generally more, the
-    // width computation is useful when the keyboard is unusually high.
+
+    // Compute label sizes from the available key width and height.
     float labelBaseSize = Math.min(
-        _tc.row_height - _tc.vertical_margin,
-        (width / 10 - _tc.horizontal_margin) * 3/2
-        ) * _config.characterSize;
+            _tc.row_height - _tc.vertical_margin,
+            (width / 10 - _tc.horizontal_margin) * 3/2
+    ) * _config.characterSize;
+
     _mainLabelSize = labelBaseSize * _config.labelTextSize;
     _subLabelSize = labelBaseSize * _config.sublabelTextSize;
+
     int height =
-      (int)(_tc.row_height * _keyboard.keysHeight
-          + _config.marginTop + _marginBottom);
+            (int)(_tc.row_height * _keyboard.keysHeight
+                    + _config.marginTop + _marginBottom);
+
     setMeasuredDimension(width, height);
   }
 
   Rect _cached_exclusion_rect = new Rect();
   List<Rect> _cached_exclusion_rects = Arrays.asList(_cached_exclusion_rect);
+
   @Override
   public void onLayout(boolean changed, int left, int top, int right, int bottom)
   {
     if (!changed)
       return;
-    // Since SDK 30, this is done automatically:
-    // https://android.googlesource.com/platform/frameworks/base/+/android11-release/core/java/android/inputmethodservice/InputMethodService.java#852
+
     if (VERSION.SDK_INT == 29)
     {
-      // Disable the back-gesture on the keyboard area
+      // Disable the back gesture on the keyboard area.
       _cached_exclusion_rect.set(
-          left + (int)_marginLeft,
-          top + (int)_config.marginTop,
-          right - (int)_marginRight,
-          bottom - (int)_marginBottom);
+              left + (int)_marginLeft,
+              top + (int)_config.marginTop,
+              right - (int)_marginRight,
+              bottom - (int)_marginBottom);
+
       setSystemGestureExclusionRects(_cached_exclusion_rects);
     }
   }
@@ -313,43 +322,45 @@ public class Keyboard2View extends View
   @Override
   public WindowInsets onApplyWindowInsets(WindowInsets wi)
   {
-    // LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS is set in [Keyboard2#updateSoftInputWindowLayoutParams] for SDK_INT >= 35.
     if (VERSION.SDK_INT < 35)
       return wi;
+
     int insets_types =
-      WindowInsets.Type.systemBars()
-      | WindowInsets.Type.displayCutout();
+            WindowInsets.Type.systemBars()
+                    | WindowInsets.Type.displayCutout();
+
     Insets insets = wi.getInsets(insets_types);
     _insets_left = insets.left;
     _insets_right = insets.right;
     _insets_bottom = insets.bottom;
+
     return WindowInsets.CONSUMED;
   }
 
   /** Horizontal and vertical position of the 9 indexes. */
   static final Paint.Align[] LABEL_POSITION_H = new Paint.Align[]{
-    Paint.Align.CENTER, Paint.Align.LEFT, Paint.Align.RIGHT, Paint.Align.LEFT,
-    Paint.Align.RIGHT, Paint.Align.LEFT, Paint.Align.RIGHT,
-    Paint.Align.CENTER, Paint.Align.CENTER
+          Paint.Align.CENTER, Paint.Align.LEFT, Paint.Align.RIGHT, Paint.Align.LEFT,
+          Paint.Align.RIGHT, Paint.Align.LEFT, Paint.Align.RIGHT,
+          Paint.Align.CENTER, Paint.Align.CENTER
   };
 
   static final Vertical[] LABEL_POSITION_V = new Vertical[]{
-    Vertical.CENTER, Vertical.TOP, Vertical.TOP, Vertical.BOTTOM,
-    Vertical.BOTTOM, Vertical.CENTER, Vertical.CENTER, Vertical.TOP,
-    Vertical.BOTTOM
+          Vertical.CENTER, Vertical.TOP, Vertical.TOP, Vertical.BOTTOM,
+          Vertical.BOTTOM, Vertical.CENTER, Vertical.CENTER, Vertical.TOP,
+          Vertical.BOTTOM
   };
 
   @Override
   protected void onDraw(Canvas canvas)
   {
-    if (_tc.keyboard_background_paint != null)
+    boolean sharedClipboardBackground = getParent() instanceof ClipboardPane
+        && ((ClipboardPane)getParent()).hasSharedBackground();
+    if (!sharedClipboardBackground)
     {
-      canvas.drawRect(
-              0,
-              0,
-              getWidth(),
-              getHeight(),
-              _tc.keyboard_background_paint);
+      if (_tc.keyboard_background_bitmap != null)
+        drawKeyboardBackground(canvas);
+      else if (_tc.keyboard_background_paint != null)
+        canvas.drawRect(0, 0, getWidth(), getHeight(), _tc.keyboard_background_paint);
     }
 
     float y = _tc.margin_top;
@@ -379,14 +390,37 @@ public class Keyboard2View extends View
         if (k.keys[0] != null)
           drawLabel(canvas, k.keys[0], keyW / 2f + x, y, keyH, isKeyDown, tc_key);
         for (int i = 1; i < 9; i++)
-        {
           if (k.keys[i] != null)
             drawSubLabel(canvas, k.keys[i], x, y, keyW, keyH, i, isKeyDown, tc_key);
-        }
         drawIndication(canvas, k, x, y, keyW, keyH, _tc);
         x += _keyWidth * k.width;
       }
       y += row.height * _tc.row_height;
+    }
+  }
+
+  private void drawKeyboardBackground(Canvas canvas)
+  {
+    float panelWidth = getWidth() / 3.f;
+    float panelHeight = getHeight();
+    float sourcePanelWidth = _tc.keyboard_background_bitmap.getWidth() / 3.f;
+    float sourceHeight = _tc.keyboard_background_bitmap.getHeight();
+    if (panelWidth <= 0 || panelHeight <= 0 || sourcePanelWidth <= 0 || sourceHeight <= 0)
+      return;
+    float scale = Math.max(panelWidth / sourcePanelWidth, panelHeight / sourceHeight);
+    for (int panel = 0; panel < 3; panel++)
+    {
+      float left = panel * panelWidth;
+      float sourceCenterX = (panel + 0.5f) * sourcePanelWidth;
+      _background_matrix.setScale(scale, scale);
+      _background_matrix.postTranslate(
+          left + panelWidth / 2.f - sourceCenterX * scale,
+          panelHeight / 2.f - sourceHeight * scale / 2.f);
+      canvas.save();
+      canvas.clipRect(left, 0, left + panelWidth, panelHeight);
+      canvas.drawBitmap(_tc.keyboard_background_bitmap, _background_matrix,
+          _tc.keyboard_background_bitmap_paint);
+      canvas.restore();
     }
   }
 
@@ -396,7 +430,6 @@ public class Keyboard2View extends View
     super.onDetachedFromWindow();
   }
 
-  /** Draw borders and background of the key. */
   void drawKeyFrame(Canvas canvas, float x, float y, float keyW, float keyH,
       Theme.Computed.Key tc)
   {
@@ -407,7 +440,7 @@ public class Keyboard2View extends View
     canvas.drawRoundRect(_tmpRect, r, r, tc.bg_paint);
     if (w > 0.f)
     {
-      float overlap = r - r * 0.85f + w; // sin(45°)
+      float overlap = r - r * 0.85f + w;
       drawBorder(canvas, x, y, x + overlap, y + keyH, tc.border_left_paint, tc);
       drawBorder(canvas, x + keyW - overlap, y, x + keyW, y + keyH, tc.border_right_paint, tc);
       drawBorder(canvas, x, y, x + keyW, y + overlap, tc.border_top_paint, tc);
@@ -415,8 +448,6 @@ public class Keyboard2View extends View
     }
   }
 
-  /** Clip to draw a border at a time. This allows to call [drawRoundRect]
-      several time with the same parameters but a different Paint. */
   void drawBorder(Canvas canvas, float clipl, float clipt, float clipr,
       float clipb, Paint paint, Theme.Computed.Key tc)
   {
@@ -456,7 +487,8 @@ public class Keyboard2View extends View
     if (kv == null)
       return;
     float textSize = scaleTextSize(kv, true);
-    Paint p = tc.label_paint(kv.hasFlagsAny(KeyValue.FLAG_KEY_FONT), labelColor(kv, isKeyDown, false), textSize);
+    Paint p = tc.label_paint(kv.hasFlagsAny(KeyValue.FLAG_KEY_FONT),
+        labelColor(kv, isKeyDown, false), textSize);
     canvas.drawText(kv.getString(), x, (keyH - p.ascent() - p.descent()) / 2f + y, p);
   }
 
@@ -470,7 +502,8 @@ public class Keyboard2View extends View
     if (kv == null)
       return;
     float textSize = scaleTextSize(kv, false);
-    Paint p = tc.sublabel_paint(kv.hasFlagsAny(KeyValue.FLAG_KEY_FONT), labelColor(kv, isKeyDown, true), textSize, a);
+    Paint p = tc.sublabel_paint(kv.hasFlagsAny(KeyValue.FLAG_KEY_FONT),
+        labelColor(kv, isKeyDown, true), textSize, a);
     float subPadding = _config.keyPadding;
     if (v == Vertical.CENTER)
       y += (keyH - p.ascent() - p.descent()) / 2f;
@@ -482,7 +515,6 @@ public class Keyboard2View extends View
       x += (a == Paint.Align.LEFT) ? subPadding : keyW - subPadding;
     String label = kv.getString();
     int label_len = label.length();
-    // Limit the label of string keys to 3 characters
     if (label_len > 3 && kv.getKind() == KeyValue.Kind.String)
       label_len = 3;
     canvas.drawText(label, 0, label_len, x, y, p);

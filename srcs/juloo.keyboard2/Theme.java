@@ -2,6 +2,9 @@ package juloo.keyboard2;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
@@ -21,6 +24,9 @@ public class Theme
   public final boolean hasKeyboardGradient;
   public final int keyboardGradientStart;
   public final int keyboardGradientEnd;
+  public final Bitmap keyboardBackgroundBitmap;
+  public final float keyOpacityMultiplier;
+  public final float keyActivatedOpacityMultiplier;
 
   // Label colors
   public final int lockedColor;
@@ -52,6 +58,12 @@ public class Theme
     hasKeyboardGradient = s.hasValue(R.styleable.keyboard_keyboardGradientStart) && s.hasValue(R.styleable.keyboard_keyboardGradientEnd);
     keyboardGradientStart = s.getColor(R.styleable.keyboard_keyboardGradientStart, 0);
     keyboardGradientEnd = s.getColor(R.styleable.keyboard_keyboardGradientEnd, 0);
+    Drawable background = s.getDrawable(R.styleable.keyboard_keyboardBackgroundImage);
+    keyboardBackgroundBitmap = background instanceof BitmapDrawable
+        ? ((BitmapDrawable) background).getBitmap() : null;
+    keyOpacityMultiplier = s.getFloat(R.styleable.keyboard_keyOpacityMultiplier, 1.f);
+    keyActivatedOpacityMultiplier =
+        s.getFloat(R.styleable.keyboard_keyActivatedOpacityMultiplier, 1.f);
     colorKey = s.getColor(R.styleable.keyboard_colorKey, 0);
     colorKeyActivated = s.getColor(R.styleable.keyboard_colorKeyActivated, 0);
     colorKeyAction = s.getColor(R.styleable.keyboard_colorKeyAction, colorKey);
@@ -65,9 +77,9 @@ public class Theme
     lockedColor = s.getColor(R.styleable.keyboard_colorLabelLocked, 0);
     subLabelColor = s.getColor(R.styleable.keyboard_colorSubLabel, 0);
     secondaryLabelColor = adjustLight(labelColor,
-        s.getFloat(R.styleable.keyboard_secondaryDimming, 0.25f));
+            s.getFloat(R.styleable.keyboard_secondaryDimming, 0.25f));
     greyedLabelColor = adjustLight(labelColor,
-        s.getFloat(R.styleable.keyboard_greyedDimming, 0.5f));
+            s.getFloat(R.styleable.keyboard_greyedDimming, 0.5f));
     keyBorderRadius = s.getDimension(R.styleable.keyboard_keyBorderRadius, 0);
     keyBorderWidth = s.getDimension(R.styleable.keyboard_keyBorderWidth, 0);
     keyBorderWidthActivated = s.getDimension(R.styleable.keyboard_keyBorderWidthActivated, 0);
@@ -116,6 +128,8 @@ public class Theme
     public final float margin_left;
     public final float row_height;
     public final Paint keyboard_background_paint;
+    public final Bitmap keyboard_background_bitmap;
+    public final Paint keyboard_background_bitmap_paint;
     public final Paint indication_paint;
 
     public final Key key;
@@ -129,7 +143,7 @@ public class Theme
       // Make sure that the layout isn't higher than the screen. Take the
       // height of the candidates view into account.
       row_height = Math.min(config.keyboard_rows_height_pixels,
-          (config.screenHeightPixels - config.keyboard_rows_height_pixels) / layout.keysHeight);
+              (config.screenHeightPixels - config.keyboard_rows_height_pixels) / layout.keysHeight);
       vertical_margin = config.key_vertical_margin * row_height;
       horizontal_margin = config.key_horizontal_margin * keyWidth;
       // Add half of the key margin on the left and on the top as it's also
@@ -137,6 +151,9 @@ public class Theme
       margin_top = config.marginTop + vertical_margin / 2;
       margin_left = horizontal_margin / 2;
       keyboard_background_paint = init_keyboard_background_paint(theme, margin_top + row_height * layout.keysHeight + config.margin_bottom);
+      keyboard_background_bitmap = theme.keyboardBackgroundBitmap;
+      keyboard_background_bitmap_paint = keyboard_background_bitmap == null
+          ? null : new Paint(Paint.FILTER_BITMAP_FLAG);
       key = new Key(theme, config, keyWidth, false, KeyboardData.Key.Role.Normal);
       key_action = new Key(theme, config, keyWidth, false, KeyboardData.Key.Role.Action);
       key_space_bar = new Key(theme, config, keyWidth, false, KeyboardData.Key.Role.Space_bar);
@@ -179,14 +196,14 @@ public class Theme
       final int _label_alpha_bits;
 
       public Key(Theme theme, Config config, float keyWidth, boolean activated,
-          KeyboardData.Key.Role role)
+                 KeyboardData.Key.Role role)
       {
         border_radius = config.borderConfig ? config.customBorderRadius * keyWidth : theme.keyBorderRadius;
         if (activated)
         {
           border_width = theme.keyBorderWidthActivated;
           bg_paint.setColor(theme.colorKeyActivated);
-          bg_paint.setAlpha(config.keyActivatedOpacity);
+          bg_paint.setAlpha(scaledOpacity(config.keyActivatedOpacity, theme.keyActivatedOpacityMultiplier));
         }
         else
         {
@@ -209,7 +226,7 @@ public class Theme
               border_width = config.borderConfig ? config.customBorderLineWidth : theme.keyBorderWidth;
               break;
           }
-          bg_paint.setAlpha(config.keyOpacity);
+          bg_paint.setAlpha(scaledOpacity(config.keyOpacity, theme.keyOpacityMultiplier));
         }
         border_left_paint = init_border_paint(config, border_width, theme.keyBorderColorLeft);
         border_top_paint = init_border_paint(config, border_width, theme.keyBorderColorTop);
@@ -220,6 +237,11 @@ public class Theme
         _sublabel_paint = init_label_paint(config, null);
         _special_sublabel_paint = init_label_paint(config, _key_font);
         _label_alpha_bits = (config.labelBrightness & 0xFF) << 24;
+      }
+
+      static int scaledOpacity(int opacity, float multiplier)
+      {
+        return Math.max(0, Math.min(255, Math.round(opacity * multiplier)));
       }
 
       public Paint label_paint(boolean special_font, int color, float text_size)

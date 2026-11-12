@@ -51,6 +51,8 @@ The `<keyboard>`...`</keyboard>` pair follows the declaration tag and encloses t
 
 * `locale_extra_keys`: Whether Unexpected should add language-dependent extra keys from [method.xml](../res/xml/method.xml) to this layout. It accepts `true` or `false`, and defaults to `true`. To disable these automatic additions, specify `locale_extra_keys="false"`.
 
+* `skip_auto_split`: Whether to skip the automatic wide-screen split for this layout. It accepts `true` or `false`, and defaults to `false`. Use this when the layout defines its own center spacing and must not receive the automatic middle column.
+
 ## Row
 The `<row>`...`</row>` pair encloses one row on the keyboard. It has the following optional property:
 * `height`: The height of the row: a positive floating-point value.

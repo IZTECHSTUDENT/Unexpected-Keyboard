@@ -283,6 +283,7 @@ public final class Config
       case "epaperblack": return R.style.ePaperBlack;
       case "dracula": return R.style.Dracula;
       case "gradientpurplepink": return R.style.GradientPurplePink;
+      case "animetriptych": return R.style.AnimeTriptych;
       default:
       case "system":
         if ((night_mode & Configuration.UI_MODE_NIGHT_NO) != 0)

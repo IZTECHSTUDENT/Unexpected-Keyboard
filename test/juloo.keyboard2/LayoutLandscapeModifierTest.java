@@ -88,13 +88,41 @@ public class LayoutLandscapeModifierTest
   }
 
   @Test
+  public void automatic_split_is_enabled_by_default()
+  {
+    KeyboardData kw = new KeyboardData(new ArrayList<KeyboardData.Row>(),
+        1f, null, null, null, null, true, false, true, false);
+    assertTrue(LayoutModifier.should_split_layout(true, kw));
+  }
+
+  @Test
+  public void automatic_split_can_be_disabled_per_layout()
+  {
+    KeyboardData kw = new KeyboardData(new ArrayList<KeyboardData.Row>(),
+        1f, null, null, null, null, true, false, true, true);
+    assertFalse(LayoutModifier.should_split_layout(true, kw));
+    assertFalse(LayoutModifier.should_split_layout(false, kw));
+  }
+
+  @Test
+  public void automatic_split_attribute_defaults_and_parses() throws Exception
+  {
+    KeyboardData default_layout = KeyboardData.load_string_exn(
+        "<keyboard><row><key c=\"a\"/></row></keyboard>");
+    KeyboardData tablet_layout = KeyboardData.load_string_exn(
+        "<keyboard skip_auto_split=\"true\"><row><key c=\"a\"/></row></keyboard>");
+    assertFalse(default_layout.skip_auto_split);
+    assertTrue(tablet_layout.skip_auto_split);
+  }
+
+  @Test
   public void whole_layout_is_split_from_the_bottom()
   {
     List<KeyboardData.Row> rows = new ArrayList<KeyboardData.Row>();
     rows.add(row_of_widths(1, 1, 1, 1, 1, 1, 1, 1, 1, 1));
     rows.add(row_of_widths(1, 1, 1, 1, 1, 1, 1, 1, 1, 1));
     KeyboardData kw = new KeyboardData(rows, 10f, null, null, null, null,
-        true, false, true);
+        true, false, true, false);
     KeyboardData split = LayoutLandscapeModifier.transform_to_landscape(kw);
     assertEquals(15f, split.keysWidth, EPS);
     // The bottom row (index 0 from the bottom) gets the emoji key, the row
