@@ -6,6 +6,11 @@
     <!-- Optional vertical gradient drawn behind the keys -->
     <attr name="keyboardGradientStart" format="color"/>
     <attr name="keyboardGradientEnd" format="color"/>
+      <!-- Optional bitmap drawn behind the keys -->
+      <attr name="keyboardBackgroundImage" format="reference"/>
+      <!-- Theme-specific opacity multipliers -->
+      <attr name="keyOpacityMultiplier" format="float"/>
+      <attr name="keyActivatedOpacityMultiplier" format="float"/>
     <!-- Background of the keys -->
     <attr name="colorKey" format="color"/>
     <!-- Background of the keys when pressed -->
@@ -371,5 +376,39 @@
     <item name="keyBorderWidthActivated">0dp</item>
     <item name="emoji_button_bg">#3B2D50</item>
     <item name="emoji_color">#FFFFFF</item>
+  </style>
+
+      <style name="AnimeTriptych" parent="BaseTheme">
+          <item name="android:isLightTheme">false</item>
+
+          <item name="colorKeyboard">#000000</item>
+          <item name="keyboardBackgroundImage">@drawable/anime_triptych</item>
+
+          <item name="colorKey">#000000</item>
+          <item name="colorKeyActivated">#666666</item>
+          <item name="colorKeyAction">#000000</item>
+          <item name="colorKeySpaceBar">#000000</item>
+
+          <item name="keyOpacityMultiplier">0.35</item>
+          <item name="keyActivatedOpacityMultiplier">0.60</item>
+
+          <item name="colorLabel">#FFFFFFFF</item>
+          <item name="colorLabelPressed">#FFFFFFFF</item>
+          <item name="colorLabelActivated">#FFBFEFFF</item>
+          <item name="colorLabelLocked">#FFBFFFCB</item>
+          <item name="colorSubLabel">#FFFFFFFF</item>
+
+          <item name="keyBorderWidth">0.8dp</item>
+          <item name="keyBorderWidthActivated">1dp</item>
+          <item name="keyBorderWidthAction">0.8dp</item>
+          <item name="keyBorderWidthSpaceBar">0.8dp</item>
+
+          <item name="keyBorderColorLeft">#99FFFFFF</item>
+          <item name="keyBorderColorTop">#99FFFFFF</item>
+          <item name="keyBorderColorRight">#99FFFFFF</item>
+          <item name="keyBorderColorBottom">#99FFFFFF</item>
+
+          <item name="emoji_button_bg">#000000</item>
+          <item name="emoji_color">#FFFFFFFF</item>
   </style>
 </resources>
